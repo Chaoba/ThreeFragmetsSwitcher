@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="SwticherView">
+        <attr name="middleProportion" format="float"></attr>
+        <attr name="sideMarginTopAndDown" format="dimension"></attr>
+        <attr name="middleMarginLeftAndRight" format="dimension"></attr>
+        <attr name="middleMarginTopAndDown" format="dimension"></attr>
+    </declare-styleable>
+
+</resources>

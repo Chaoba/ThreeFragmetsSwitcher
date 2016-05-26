@@ -1,9 +1,9 @@
 package com.mushuichuan.threefragmetsswitcher;
 
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.util.AttributeSet;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.Animation;
@@ -11,92 +11,116 @@ import android.view.animation.AnimationUtils;
 import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
 
+import static java.lang.Math.abs;
+
 /**
  * Created by Liyanshun on 2016/5/24.
  */
 public class SwitcherView extends RelativeLayout {
     private static final String TAG = "SwitcherView";
-    private View mBodyLayout;
+    private final float middleProportion;
+    private final int sideMarginTopAndDown, middleMarginTopAndDown, middleMarginLeftAndRight;
     private FrameLayout mChildMiddle, mChildLeft, mChildRight;
     private LayoutParams mMiddleParam, mLeftParam, mRightParam;
-    private OnClickListener mLeftListener, mRightListener;
     private float startX;
     private float endX;
+    private int middleLeft;
+    private int middleRight;
+    private final int CLICK_THRESHOLD = 50;
 
     public SwitcherView(Context context) {
-        super(context);
-        initChildView();
+        this(context, null);
     }
 
     public SwitcherView(Context context, AttributeSet attrs) {
-        super(context, attrs);
-        initChildView();
+        this(context, attrs, 0);
     }
 
     public SwitcherView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
+        TypedArray mTypedArray = context.obtainStyledAttributes(attrs, R.styleable.SwticherView);
+        middleProportion = mTypedArray.getFloat(R.styleable.SwticherView_middleProportion, 0.75f);
+        sideMarginTopAndDown = mTypedArray.getDimensionPixelSize(R.styleable.SwticherView_sideMarginTopAndDown, 0);
+        middleMarginTopAndDown = mTypedArray.getDimensionPixelSize(R.styleable.SwticherView_middleMarginTopAndDown, 0);
+        middleMarginLeftAndRight = mTypedArray.getDimensionPixelSize(R.styleable.SwticherView_middleMarginLeftAndRight, 0);
         initChildView();
     }
 
-    void initChildView() {
-        mLeftListener = new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.d(TAG, "left click");
-                switchLeftAndMiddle();
-            }
-        };
-        mRightListener = new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.d(TAG, "right click");
-                switchRightndMiddle();
-            }
-        };
-        mBodyLayout = LayoutInflater.from(getContext()).inflate(R.layout.body_view, null, false);
-        mChildMiddle = (FrameLayout) mBodyLayout.findViewById(R.id.child_middle);
-        mChildLeft = (FrameLayout) mBodyLayout.findViewById(R.id.child_left);
-        mChildRight = (FrameLayout) mBodyLayout.findViewById(R.id.child_right);
-        addView(mBodyLayout);
-        mMiddleParam = (LayoutParams) mChildMiddle.getLayoutParams();
-        mLeftParam = (LayoutParams) mChildLeft.getLayoutParams();
-        mRightParam = (LayoutParams) mChildRight.getLayoutParams();
-
-        resetListener();
+    @Override
+    public boolean onInterceptTouchEvent(MotionEvent ev) {
+        if (ev.getAction() == MotionEvent.ACTION_DOWN) {
+            if (ev.getX() < middleLeft || ev.getX() > middleRight)
+                return true;
+        }
+        return false;
     }
 
-    void resetListener() {
-        mChildMiddle.setOnTouchListener(new OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                Log.d(TAG, event.toString());
-                switch (event.getAction()) {
-                    case MotionEvent.ACTION_DOWN: {
-                        startX = event.getX();
-                        Log.d(TAG, "startx:" + startX);
-                        break;
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        Log.d(TAG, "onTouchEvent:" + event.toString());
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN: {
+                startX = event.getX();
+                Log.d(TAG, "startx:" + startX);
+                return true;
+            }
+            case MotionEvent.ACTION_UP: {
+                endX = event.getX();
+                Log.d(TAG, "endX:" + endX);
+                if (abs(endX - startX) < CLICK_THRESHOLD) {
+                    if (startX < middleLeft) {
+                        switchLeftAndMiddle();
+                        return true;
+                    } else if (startX > middleRight) {
+                        switchRightndMiddle();
+                        return true;
                     }
-                    case MotionEvent.ACTION_UP: {
-                        endX = event.getX();
-                        Log.d(TAG, "endX:" + endX);
-                        if (endX > startX && endX > (startX + 100)) {
-                            switchRightndMiddle();
-                            return true;
-                        } else if (endX < startX && endX < (startX - 100)) {
-                            switchLeftAndMiddle();
-                            return true;
-                        }
-                        break;
+                } else {
+                    if (endX > startX) {
+                        switchRightndMiddle();
+                        return true;
+                    } else if (endX < startX) {
+                        switchLeftAndMiddle();
+                        return true;
                     }
                 }
-                return false;
+                break;
             }
-        });
-        mChildLeft.setOnTouchListener(null);
-        mChildRight.setOnTouchListener(null);
-        mChildMiddle.setOnClickListener(null);
-        mChildLeft.setOnClickListener(mLeftListener);
-        mChildRight.setOnClickListener(mRightListener);
+        }
+        return false;
+    }
+
+    void initChildView() {
+        mChildMiddle = (FrameLayout) findViewById(R.id.child_middle);
+        mChildLeft = (FrameLayout) findViewById(R.id.child_left);
+        mChildRight = (FrameLayout) findViewById(R.id.child_right);
+    }
+
+    @Override
+
+    protected void onLayout(boolean changed, int l, int t, int r, int b) {
+        super.onLayout(changed, l, t, r, b);
+        if (mChildMiddle == null) {
+            initChildView();
+        }
+        int middleWidth = (int) (r * middleProportion);
+        middleLeft = (r - middleWidth) / 2;
+        middleRight = r - (r - middleWidth) / 2;
+        mChildMiddle.layout(middleLeft, t + middleMarginTopAndDown, middleRight, b - middleMarginTopAndDown);
+
+
+        int leftRight = middleLeft - middleMarginLeftAndRight;
+        int leftLeft = -(middleWidth - leftRight);
+        mChildLeft.layout(leftLeft, t + sideMarginTopAndDown, leftRight, b - sideMarginTopAndDown);
+
+        int rightLeft = middleRight + middleMarginLeftAndRight;
+        int rightRight = rightLeft + middleWidth;
+        mChildRight.layout(rightLeft, t + sideMarginTopAndDown, rightRight, b - sideMarginTopAndDown);
+
+        mMiddleParam = (LayoutParams) mChildMiddle.getLayoutParams();
+        mMiddleParam.addRule(1);
+        mLeftParam = (LayoutParams) mChildLeft.getLayoutParams();
+        mRightParam = (LayoutParams) mChildRight.getLayoutParams();
     }
 
     public void switchLeftAndMiddle() {
@@ -117,7 +141,6 @@ public class SwitcherView extends RelativeLayout {
                 FrameLayout temp = mChildMiddle;
                 mChildMiddle = mChildLeft;
                 mChildLeft = temp;
-                resetListener();
             }
 
             @Override
@@ -146,7 +169,6 @@ public class SwitcherView extends RelativeLayout {
                 FrameLayout temp = mChildMiddle;
                 mChildMiddle = mChildRight;
                 mChildRight = temp;
-                resetListener();
             }
 
             @Override

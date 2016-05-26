@@ -9,6 +9,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:gravity="center"
-        android:text="111111111111111111111111111111111111111111"/>
+        android:textSize="30sp"
+        android:text="Fragment One"/>
 
 </FrameLayout>
