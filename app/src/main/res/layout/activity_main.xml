@@ -14,19 +14,19 @@
 
     <FrameLayout
         android:id="@+id/child_middle"
-        android:layout_width="300dp"
+        android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:background="@android:color/holo_blue_dark"/>
 
     <FrameLayout
         android:id="@+id/child_left"
-        android:layout_width="300dp"
+        android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:background="@android:color/holo_green_dark"/>
 
     <FrameLayout
         android:id="@+id/child_right"
-        android:layout_width="300dp"
+        android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:background="@android:color/holo_red_dark"/>
 </com.mushuichuan.threefragmetsswitcher.SwitcherView>
