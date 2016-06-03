@@ -3,6 +3,7 @@ package com.mushuichuan.threefragmetsswitcher;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,4 +27,14 @@ public class BlankFragment1 extends android.app.Fragment {
         return inflater.inflate(R.layout.fragment_blank, container, false);
     }
 
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        view.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d("TAG", "clicked");
+            }
+        });
+    }
 }

@@ -53,42 +53,42 @@ public class SwitcherView extends RelativeLayout {
         }
         return false;
     }
-
     @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        Log.d(TAG, "onTouchEvent:" + event.toString());
+    public boolean dispatchTouchEvent(MotionEvent event) {
+        Log.i(TAG, "dispatchTouchEvent:" + event.toString());
+        boolean handled = super.dispatchTouchEvent(event);
+        Log.i(TAG, "handled:" + handled);
+
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN: {
                 startX = event.getX();
-                Log.d(TAG, "startx:" + startX);
-                return true;
+                Log.i(TAG, "startx:" + startX);
             }
+            break;
+            case MotionEvent.ACTION_CANCEL:
             case MotionEvent.ACTION_UP: {
                 endX = event.getX();
-                Log.d(TAG, "endX:" + endX);
+                Log.i(TAG, "endX:" + endX);
                 if (abs(endX - startX) < CLICK_THRESHOLD) {
+                    //点击事件
                     if (startX < middleLeft) {
                         switchLeftAndMiddle();
-                        return true;
                     } else if (startX > middleRight) {
-                        switchRightndMiddle();
-                        return true;
+                        switchRightAndMiddle();
                     }
                 } else {
+                    //滑动事件
                     if (endX > startX) {
-                        switchRightndMiddle();
-                        return true;
+                        switchRightAndMiddle();
                     } else if (endX < startX) {
                         switchLeftAndMiddle();
-                        return true;
                     }
                 }
                 break;
             }
         }
-        return false;
+        return true;
     }
-
     void initChildView() {
         mChildMiddle = (FrameLayout) findViewById(R.id.child_middle);
         mChildLeft = (FrameLayout) findViewById(R.id.child_left);
@@ -96,7 +96,6 @@ public class SwitcherView extends RelativeLayout {
     }
 
     @Override
-
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
         super.onLayout(changed, l, t, r, b);
         if (mChildMiddle == null) {
@@ -117,7 +116,6 @@ public class SwitcherView extends RelativeLayout {
         mChildRight.layout(rightLeft, t + sideMarginTopAndDown, rightRight, b - sideMarginTopAndDown);
 
         mMiddleParam = (LayoutParams) mChildMiddle.getLayoutParams();
-        mMiddleParam.addRule(1);
         mLeftParam = (LayoutParams) mChildLeft.getLayoutParams();
         mRightParam = (LayoutParams) mChildRight.getLayoutParams();
     }
@@ -150,7 +148,7 @@ public class SwitcherView extends RelativeLayout {
 
     }
 
-    public void switchRightndMiddle() {
+    public void switchRightAndMiddle() {
         Animation leftInAnimation = AnimationUtils.loadAnimation(getContext(), R.anim.slide_right_in);
         mChildRight.startAnimation(leftInAnimation);
         Animation rightOutAnimation = AnimationUtils.loadAnimation(getContext(), R.anim.slide_right_out);
@@ -175,7 +173,6 @@ public class SwitcherView extends RelativeLayout {
 
             }
         });
-
 
     }
 }
